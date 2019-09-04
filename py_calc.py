@@ -86,16 +86,15 @@ def parser(expr):
     return result
 
 
-# Вспомогательная функция вывода списка элементов
-def show(elements_list, name):
-    print(name, end=' ')
-    for element in elements_list:
-        print(element.content, end=' ')
-    print()
-
-
 # Функция, вычисляющая значение выражения
 def calculate(expr):
+    # Анализируем правильность расстановки скобок
+    expr = '(' + expr + ')'
+    bracket_analysis(expr)
+
+    # Парсим выражение на отдельные элементы: числа, скобки, знаки операций и т.д.
+    expr = parser(expr)
+
     # В цикле итеративно вычисляем значение выражения
     # Для этого последовательно разбиваем его на подвыражения, построенные только из чисел и операций +, -, *, /, ^
     while True:
@@ -162,7 +161,7 @@ def calculate(expr):
             if pos == -1:
                 raise Exception
 
-            # Вычисляем результат операции с максимльным рангом
+            # Вычисляем результат найденной операции
             operation = sub_expr[pos].content
             a1 = float(sub_expr[pos - 1].get_float_content())
             a2 = float(sub_expr[pos + 1].get_float_content())
@@ -192,22 +191,39 @@ def calculate(expr):
             return expr[0].get_float_content()
 
 
+# Функция, выводящая справку
+def show_help():
+    s = """
+    Программа py_calc. Автор Сергей Лебидко. 2019 г.
+    Поддерживаются следующие функции:
+    sin   - синус
+    cos   - косинус
+    tan   - тангенс
+    cotan - котангенс
+    abs   - абсольтное значение (модуль)
+    ln    - натуральный логарифм
+    log   - логарифм по основанию 2
+    lg    - логарифм по основанию 10
+    sqrt  - квадратный корень числа
+    exp   - экспонента
+    Для возведения в степень используйте знак ^
+    Для выхода введите любую из команд: exit, x, quit, q 
+    """
+    print(s)
+
+
 # Начало выполнения программы
 while True:
     e = input('Введите выражение: ')
     e = e.lower().replace(' ', '')
     if e == '':
         continue
+    if e == 'help' or e == '?':
+        show_help()
+        continue
     if e == 'quit' or e == 'q' or e == 'exit' or e == 'x':
         break
     try:
-        # Анализируем правильность расстановки скобок
-        e = '(' + e + ')'
-        bracket_analysis(e)
-
-        # Парсим выражение на отдельные элементы: числа, скобки, знаки операций и т.д.
-        e = parser(e)
-
         # Вычисляем и выводим результат
         result = calculate(e)
         print(result)

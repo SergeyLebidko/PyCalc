@@ -22,15 +22,6 @@ FUNCTIONS = {'sin': math.sin,
              'sqrt': math.sqrt,
              'exp': math.exp}
 
-# Приоритеты операций
-OPERATIONS_PRIORITY = {
-    '+': 0,
-    '-': 0,
-    '/': 1,
-    '*': 1,
-    '^': 2
-}
-
 
 # Класс для представления отдельных элементов выражения
 class Element:
@@ -95,15 +86,16 @@ def parser(expr):
     return result
 
 
+# Вспомогательная функция вывода списка элементов
+def show(elements_list, name):
+    print(name, end=' ')
+    for element in elements_list:
+        print(element.content, end=' ')
+    print()
+
+
 # Функция, вычисляющая значение выражения
 def calculate(expr):
-    # Анализируем правильность расстановки скобок
-    expr = '(' + expr + ')'
-    bracket_analysis(expr)
-
-    # Парсим выражение на отдельные элементы: числа, скобки, знаки операций и т.д.
-    expr = parser(expr)
-
     # В цикле итеративно вычисляем значение выражения
     # Для этого последовательно разбиваем его на подвыражения, построенные только из чисел и операций +, -, *, /, ^
     while True:
@@ -123,14 +115,20 @@ def calculate(expr):
 
         # Первый этап вычисления значения подвыражения - разрешение всех функций и констант в нем в числа
         resolved_sub_expr = []
+        skip_flag = False
         for i in range(len(sub_expr)):
+            if skip_flag:
+                skip_flag = False
+                continue
             p = sub_expr[i]
             if p.type_of_content == 'symbol':
-                if p in CONSTANTS.keys():
+                if p.content in CONSTANTS.keys():
                     resolved_sub_expr.append(Element('number', CONSTANTS[p.content]))
                     continue
-                if p in FUNCTIONS.keys():
-                    resolved_sub_expr.append(Element('number', FUNCTIONS[p.content](sub_expr[i + 1])))
+                if p.content in FUNCTIONS.keys():
+                    resolved_sub_expr.append(
+                        Element('number', FUNCTIONS[p.content](sub_expr[i + 1].get_float_content())))
+                    skip_flag = True
                     continue
                 raise Exception
             resolved_sub_expr.append(p)
@@ -142,8 +140,56 @@ def calculate(expr):
             del sub_expr[0]
 
         # Третий этап вычисления подвыражения - итеративное вычисление результатов элементарных операций +, -, /, *, ^
+        while True:
+            # Если подвыражение содержит одно значение, то его можно считать вычисленным
+            if len(sub_expr) == 1:
+                break
 
-        break
+            # Ищем операцию с максимальным рангом
+            pos = -1
+            for i in range(len(sub_expr)):
+                if sub_expr[i].content == '+' or sub_expr[i].content == '-':
+                    pos = i
+                    break
+            for i in range(len(sub_expr)):
+                if sub_expr[i].content == '*' or sub_expr[i].content == '/':
+                    pos = i
+                    break
+            for i in range(len(sub_expr)):
+                if sub_expr[i].content == '^':
+                    pos = i
+                    break
+            if pos == -1:
+                raise Exception
+
+            # Вычисляем результат операции с максимльным рангом
+            operation = sub_expr[pos].content
+            a1 = float(sub_expr[pos - 1].get_float_content())
+            a2 = float(sub_expr[pos + 1].get_float_content())
+            if operation == '+':
+                res = a1 + a2
+            if operation == '-':
+                res = a1 - a2
+            if operation == '/':
+                res = a1 / a2
+            if operation == '*':
+                res = a1 * a2
+            if operation == '^':
+                res = math.pow(a1, a2)
+
+            # Записываем результат операции в подвыражение
+            sub_expr[pos] = Element('number', res)
+            del sub_expr[pos - 1]
+            del sub_expr[pos]
+
+        # Вписываем результат вычисления подвыражения в основное выражение
+        for i in range(pos_end - pos_start):
+            del expr[pos_start]
+        expr[pos_start] = sub_expr[0]
+
+        # Проверяем условие завершения вычислений
+        if len(expr) == 1:
+            return expr[0].get_float_content()
 
 
 # Начало выполнения программы
@@ -155,6 +201,15 @@ while True:
     if e == 'quit' or e == 'q' or e == 'exit' or e == 'x':
         break
     try:
-        calculate(e)
+        # Анализируем правильность расстановки скобок
+        e = '(' + e + ')'
+        bracket_analysis(e)
+
+        # Парсим выражение на отдельные элементы: числа, скобки, знаки операций и т.д.
+        e = parser(e)
+
+        # Вычисляем и выводим результат
+        result = calculate(e)
+        print(result)
     except Exception:
         print('Не удалось вычислить значение выражения')

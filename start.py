@@ -1,9 +1,26 @@
+import math
+
 # Типы элементов выражения
 OPEN_BRACKET = ['(']
 CLOSE_BRACKET = [')']
 OPERATIONS = list('+-*/^')
 NUMBERS = list('0123456789.')
 SYMBOLS = [chr(a) for a in range(ord('a'), ord('z') + 1)]
+
+# Константы
+CONSTANTS = {'pi': math.pi, 'e': math.e}
+
+# Стандартные математические функции
+FUNCTIONS = {'sin': math.sin,
+             'cos': math.cos,
+             'tan': math.tan,
+             'cotan': (lambda x: 1 / math.tan(x)),
+             'abs': math.fabs,
+             'ln': math.log,
+             'log': math.log2,
+             'lg': math.log10,
+             'sqrt': math.sqrt,
+             'exp': math.exp}
 
 
 # Класс для представления отдельных элементов выражения
@@ -20,10 +37,10 @@ class Element:
         self.content += a
 
 
-# Функция проверки скобок
-def bracket_analysis(e):
+# Функция проверки правильности расстановки скобок
+def bracket_analysis(expr):
     level = 0
-    for c in e:
+    for c in expr:
         if c == '(':
             level += 1
         if c == ')':
@@ -71,9 +88,30 @@ def parser(expr):
 
 # Функция, вычисляющая значение выражения
 def calculate(expr):
+    # Анализируем правильность расстановки скобок
     expr = '(' + expr + ')'
     bracket_analysis(expr)
+
+    # Парсим выражение на отдельные элементы: числа, скобки, знаки операций и т.д.
     expr = parser(expr)
+
+    # В цикле итеративно вычисляем значение выражения
+    while True:
+
+        # Ищем подходящее для вычисления подвыражение, заключенное в скобки
+        pos_start = 0
+        pos_end = 0
+        pos = 0
+        for p in expr:
+            if p.type_of_content == 'open_bracket':
+                pos_start = pos
+            if p.type_of_content == 'close_bracket':
+                pos_end = pos
+                break
+            pos += 1
+        subexpr = expr[pos_start + 1: pos_end]
+
+        break
 
 
 # Начало выполнения программы

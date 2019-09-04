@@ -22,6 +22,15 @@ FUNCTIONS = {'sin': math.sin,
              'sqrt': math.sqrt,
              'exp': math.exp}
 
+# Приоритеты операций
+OPERATIONS_PRIORITY = {
+    '+': 0,
+    '-': 0,
+    '/': 1,
+    '*': 1,
+    '^': 2
+}
+
 
 # Класс для представления отдельных элементов выражения
 class Element:
@@ -96,6 +105,7 @@ def calculate(expr):
     expr = parser(expr)
 
     # В цикле итеративно вычисляем значение выражения
+    # Для этого последовательно разбиваем его на подвыражения, построенные только из чисел и операций +, -, *, /, ^
     while True:
 
         # Ищем подходящее для вычисления подвыражение, заключенное в скобки
@@ -109,7 +119,29 @@ def calculate(expr):
                 pos_end = pos
                 break
             pos += 1
-        subexpr = expr[pos_start + 1: pos_end]
+        sub_expr = expr[pos_start + 1: pos_end]
+
+        # Первый этап вычисления значения подвыражения - разрешение всех функций и констант в нем в числа
+        resolved_sub_expr = []
+        for i in range(len(sub_expr)):
+            p = sub_expr[i]
+            if p.type_of_content == 'symbol':
+                if p in CONSTANTS.keys():
+                    resolved_sub_expr.append(Element('number', CONSTANTS[p.content]))
+                    continue
+                if p in FUNCTIONS.keys():
+                    resolved_sub_expr.append(Element('number', FUNCTIONS[p.content](sub_expr[i + 1])))
+                    continue
+                raise Exception
+            resolved_sub_expr.append(p)
+        sub_expr = resolved_sub_expr
+
+        # Второй этап вычисления подвыражения - удаление унарного минуса (при наличии) в начале выражения
+        if sub_expr[0].content == '-':
+            sub_expr[1].content = sub_expr[1].get_float_content() * (-1)
+            del sub_expr[0]
+
+        # Третий этап вычисления подвыражения - итеративное вычисление результатов элементарных операций +, -, /, *, ^
 
         break
 

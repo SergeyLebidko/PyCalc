@@ -192,7 +192,7 @@ def calculate(expr):
 
 
 # Функция, выводящая справку
-def show_help():
+def get_help():
     s = """
     Программа py_calc. Автор Сергей Лебидко. 2019 г.
     Поддерживаются следующие функции:
@@ -209,23 +209,4 @@ def show_help():
     Для возведения в степень используйте знак ^
     Для выхода введите любую из команд: exit, x, quit, q 
     """
-    print(s)
-
-
-# Начало выполнения программы
-while True:
-    e = input('Введите выражение: ')
-    e = e.lower().replace(' ', '')
-    if e == '':
-        continue
-    if e == 'help' or e == '?':
-        show_help()
-        continue
-    if e == 'quit' or e == 'q' or e == 'exit' or e == 'x':
-        break
-    try:
-        # Вычисляем и выводим результат
-        result = calculate(e)
-        print(result)
-    except Exception:
-        print('Не удалось вычислить значение выражения')
+    return s

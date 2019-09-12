@@ -33,8 +33,16 @@ def create_window():
     return frm
 
 
+# Функция создает дисплей
+def create_display(frm):
+    display = Entry(frm, font='Arial 18', justify='right')
+    display.place(x=BORDER, y=BORDER + (CELL_Y_SIZE // 4), width=(CELL_X_COUNT * CELL_X_SIZE) - (BORDER * 2),
+                  height=(CELL_Y_SIZE // 2) - BORDER)
+    return display
+
+
 # Функция создает кнопки
-def create_buttons(frm):
+def create_buttons(frm, disp):
     button_names = ['CE', '^', 'sin', '7', '8', '9', '+',
                     'cos', 'tan', 'cotan', '4', '5', '6', '-',
                     'abs', 'ln', 'log', '1', '2', '3', '*',
@@ -52,17 +60,40 @@ def create_buttons(frm):
             c = 0
             r += 1
 
+    def btn_action(event):
+        if clear_flag:
+            btn_ce_action(event)
+        disp.insert(len(disp.get()), event.widget['text'])
 
-# Функция создает дисплей
-def create_display(frm):
-    display = Entry(frm, font='Arial 18', justify='right')
-    display.place(x=BORDER, y=BORDER + (CELL_Y_SIZE // 4), width=(CELL_X_COUNT * CELL_X_SIZE) - (BORDER * 2),
-                  height=(CELL_Y_SIZE // 2) - BORDER)
+    def btn_ce_action(event):
+        disp.delete(0, len(disp.get()))
+        global clear_flag
+        clear_flag = False
+
+    def btn_calculate_action(event):
+        try:
+            result = calculate(disp.get())
+        except Exception:
+            result = 'Не удалось вычислить значение выражения'
+        disp.delete(0, len(disp.get()))
+        disp.insert(0, result)
+        global clear_flag
+        clear_flag = True
+
+    for btn in buttons:
+        if btn['text'] == 'CE':
+            btn.bind('<Button-1>', btn_ce_action)
+            continue
+        if btn['text'] == '=':
+            btn.bind('<Button-1>', btn_calculate_action)
+            continue
+        btn.bind('<Button-1>', btn_action)
 
 
 # Здесь начинается выполнение программы
+clear_flag = False
 root = create_window()
-create_buttons(root)
-create_display(root)
+display = create_display(root)
+create_buttons(root, display)
 
 Tk.mainloop(root)

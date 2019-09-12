@@ -2,7 +2,7 @@ from py_calc import calculate
 from tkinter import *
 
 # Количество ячеек в сетке расположения элементов окна
-CELL_X_COUNT = 7
+CELL_X_COUNT = 8
 CELL_Y_COUNT = 5
 
 # Размеры отдельных ячеек сетки
@@ -43,10 +43,10 @@ def create_display(frm):
 
 # Функция создает кнопки
 def create_buttons(frm, disp):
-    button_names = ['CE', '^', 'sin', '7', '8', '9', '+',
-                    'cos', 'tan', 'cotan', '4', '5', '6', '-',
-                    'abs', 'ln', 'log', '1', '2', '3', '*',
-                    'lg', 'sqrt', 'exp', '0', '.', '=', '/']
+    button_names = ['CE', '^', 'sin', '(', '7', '8', '9', '+',
+                    'cos', 'tan', 'cotan', ')', '4', '5', '6', '-',
+                    'abs', 'ln', 'log', 'pi', '1', '2', '3', '*',
+                    'lg', 'sqrt', 'exp', 'e', '0', '.', '=', '/']
     buttons = []
     r = 0
     c = 0
